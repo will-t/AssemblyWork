@@ -1,0 +1,39 @@
+---
+- hosts: all 
+  become: yes  
+  become_method: sudo
+  tasks:
+  - name: Install python-apt
+    ansible.builtin.package:
+     name: python-apt
+     state: latest
+  - name: installing
+    ansible.builtin.package:
+     name: apache2
+     state: latest
+  - name: first copy
+    ansible.builtin.copy:
+     src: /home/w98434545/lab-13/waturner42-csc2510-devops/lab-13/files/config/apache2.conf
+     dest: /etc/apache2/apache2.conf
+     owner: w98434545
+     group: devops
+     mode: '0644'
+  - name: second copy
+    ansible.builtin.copy:
+     src: /home/w98434545/lab-13/waturner42-csc2510-devops/lab-13/files/site/index.html
+     dest: /var/www/html/index.html
+     owner: w98434545
+     group: devops
+     mode: '0644'
+  - name: Symbolic Link
+    ansible.builtin.copy:
+     src: /etc/apache2/mods-available/headers.load
+     dest: /etc/apache2/mods-enabled/headers.load
+     owner: w98434545
+     group: devops
+     state: link
+  - name: Restart service
+    ansible.builtin.service:
+     name: apache2
+     state: restarted
+

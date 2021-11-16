@@ -1,0 +1,79 @@
+package edu.tntech.csc2310.fa2021;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.*;
+
+public class CourseTest {
+
+    Course data;
+
+    @Before
+    public void setUp() throws Exception {
+
+    }
+
+    @Test
+    public void getSubject() {
+        try {
+
+
+            data = new Course("CSC", "1300", "202180");
+            assertEquals("Subject", "CSC", data.getSubject());
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void getNumber() throws Exception {
+        data = new Course("CSC", "1300", "202180");
+        assertEquals("Subject", "1300", data.getNumber());
+    }
+
+    @Test
+    public void getTitle() throws Exception{
+        data = new Course("CSC", "1300", "202180");
+        assertEquals("Title", "Intro/Prob Solving-Comp Prog", data.getTitle());
+    }
+
+    @Test
+    public void getPrerequisites() throws Exception {
+        // CSC 1020 has no course pre-requisites; just a standing
+        data = new Course("CSC", "1020", "202180");
+        assertNull(data.getPrerequisites());
+
+        // CSC 1300 has three course-based pre-requisites
+        data = new Course("CSC", "1300", "202180");
+        String[] eresults = {"CSC 1200","MATH 1845","MATH 1910"};
+        String[] aresults = data.getPrerequisites();
+        for (int i = 0; i < eresults.length; i++) {
+            assertEquals("prereq list", eresults[i], aresults[i].trim());
+        }
+        // MATH 1910 has three course-based pre-requisites and two test-based pre-requisites
+        data = new Course("MATH", "1910", "202180");
+        String[] e0results = {"MATH 1710","MATH 1720","MATH 1730", "A02 27 to 36", "S02 610 to 800", "S12B 630 to 800"};
+        aresults = data.getPrerequisites();
+        for (int i = 0; i < e0results.length; i++) {
+            assertEquals("prereq list", e0results[i], aresults[i].trim());
+        }
+    }
+
+    @Test
+  public void getCRH() throws Exception {
+        data = new Course("CSC", "3500", "202180");
+        assertTrue("Credit Hours", 1 == data.getCredits());
+        data = new Course("CSC", "4100", "202180");
+        assertTrue("Credit Hours", 3 == data.getCredits());
+        data = new Course("CSC", "3300", "202180");
+        assertTrue("Credit Hours", 3 == data.getCredits());
+//        data = new Course("CSC", "3111", "202180");
+//        assertTrue("CSC", 3==data.getCredits());
+//        data = new Course("CSC", "3500", "202180");
+//        assertTrue("CSC", 3== data.getCredits());
+    }
+
+}
