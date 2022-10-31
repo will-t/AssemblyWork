@@ -112,7 +112,7 @@ async def start_song(message, url):
                 await message.channel.send('**Now playing:** {}'.format(filename))
                 print("Song should started playing by now")
             else:
-                await message.channel.send("King of Cum is finished with queue")
+                await message.channel.send("Finished with queue")
                 break
 @bot.event
 async def skip(message):
