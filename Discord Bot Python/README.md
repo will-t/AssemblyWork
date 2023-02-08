@@ -12,6 +12,7 @@ discord.ext
 asyncio 
 youtube search python
 Video Search
+openai
 
 Aside from ffmpeg and youtubedl
 these can be installed from the pip3 command
@@ -35,3 +36,11 @@ skip
 This bot sends the content of the discord message to a youtube search, grabbes the link of the first most played video. 
 Then it sends this link to a downloader and downloads at a high rate of speed grabbing the best quality link with the options listed. 
 Then finally it will play the song over the voice feature of discord.ext by using the ffmpeg exe.
+
+
+
+A new feature has been added,
+prompt question
+
+will ask the chat gpt ai a question of your choice
+you must add the api key generated from their website to your file for this too work.

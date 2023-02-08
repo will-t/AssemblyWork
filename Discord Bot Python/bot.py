@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from discord.ext import commands, tasks
 import youtube_dl
 import asyncio
+import openai
 ydl_opts = {
     'format': 'bestaudio/best',
     'postprocessors': [{
@@ -159,6 +160,21 @@ async def queue_play(message, url):
         await message.channel.send("Queue is full")
 
 @bot.event
+async def prompt(message):
+    openai.api_key = 'Your Key' #make sure to put your key here
+    test = message.content[5:]
+    x = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=test,
+        temperature=0,
+        max_tokens=256,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
+        )
+    await message.channel.send(x.choices[0].text)
+
+@bot.event
 async def on_message(message):
     if message.content.startswith('play'):
         search = message.content.lower()
@@ -190,6 +206,9 @@ async def on_message(message):
         url = videoSearch.result()['result'][0]['link']
         await queue_play(message, url)
         await print (url)
+        return
+    if message.content.startswith('prompt'):
+        await prompt(message)
         return
  
 async def on_ready():
