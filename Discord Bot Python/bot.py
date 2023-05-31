@@ -19,8 +19,6 @@ import asyncio
 import mysql.connector
 load_dotenv()
 
-TOKEN=''
-GUILD=""
 intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
@@ -81,11 +79,6 @@ async def skip_song(message):
         return
     if voice_client.is_playing():
         voice_client.stop()
-    if queue:
-        next_song = queue.pop(0)
-        source = await YTDLSource.from_url(next_song, loop=client.loop)
-        voice_client.play(source)
-        await message.send(f'**Now playing:** {source.title}')
     else:
         await message.send('No items left in queue')
 
@@ -107,6 +100,9 @@ async def start_song(message, url):
     voice_channel.play(audio_source)
     while voice_channel.is_playing():
         await asyncio.sleep(1)
+        #create instance of bot button view/ await for response, length as long as song length
+        #after song finishes terminate button view and continue next song 
+        
     if len(queue) > 0:
         next_song_url = queue.pop(0)
         await start_song(message, next_song_url)
@@ -153,8 +149,8 @@ async def on_message(message):
             search = message.content[5:]
             try:
                 database = mysql.connector.connect(
-                host="",
-                user="",
+                host=" ",
+                user=" ",
                 password="",
                 database=""
             )
@@ -177,182 +173,16 @@ async def on_message(message):
         return
     if message.content == "randomplaylist":
         try:
-            database = mysql.connector.connect(
-                host="",
-                user="",
-                password="",
-                database=""
-            )
-            cursor = database.cursor()
-            try:
-                cursor.execute("SHOW TABLES")
-                tables = cursor.fetchall()
-                for table in tables:
-                    regStr = ""
-                    for char in table:
-                        regStr += char
-                    strArr = strArr.pushback(regStr)
-                counter = 1
-                for str in strArr:
-                    await message.channel.send("Option" +counter +":" + str)
-                    counter = counter+1
-                await message.channel.send("Please select a playlist")
-                x = await client.wait_for('message')
-                for str in strArr:
-                    if x.content == str:
-                        cursor.execute("SELECT * FROM " + x.content)
-                        songs = cursor.fetchall()
-                        for song in songs:
-                            regStr = ""
-                            for char in song:
-                                regStr += char
-                            await message.channel.send("Now playing: "+regStr)
-                            videoSearch = VideosSearch(regStr, limit=1)
-                            url = videoSearch.result()['result'][0]['link']
-                            voice_state = message.author.voice
-                            if not voice_state or not voice_state.channel:
-                                await message.channel.send("You're not in a voice channel!")
-                                return
-                            voice_state = message.author.voice
-                            if not voice_state:
-                                await message.channel.send(f'{message.author.mention} is not connected to a voice channel')
-                                return
-                            voice_channel = voice_state.channel
-                            if not message.guild.voice_client:
-                                await voice_channel.connect()
-                            else:
-                                await message.guild.voice_client.move_to(voice_channel)
-                            voice_client = message.guild.voice_client
-                            if voice_client.is_playing():
-                                await queue_play(message, url)
-                            await start_song(message, url)
-                database.close()
-                return
-            except:
-                await message.channel.send("Error: Problem with random playlist database")
-                return
+            await randomSong(message)
         except:
-            await message.channel.send("Error: Connecting to database")
-            return
-
-
+            await message.channel.send("Error playing random song")
+        return
     if message.content == 'playlist':   
         try:
-            database = mysql.connector.connect(
-                host="",
-                user="",
-                password="",
-                database=""
-            )
-            cursor = database.cursor()
-            try:
-                await message.channel.send("Please select a playlist")
-                await listPlaylist(message)
-                x = await client.wait_for('message')
-                cursor.execute("SHOW TABLES")
-                tables = cursor.fetchall()
-                for table in tables:
-                    regStr = ""
-                    for char in table:
-                        regStr += char
-                    if(x.content == regStr):
-                        await message.channel.send("Would you like to edit the playlist?")
-                        y = await client.wait_for('message')
-                        if y.content == "Y" or y.content == "y" or y.content == "yes":
-                            await message.channel.send("Would you like to add or remove songs?")
-                            z = await client.wait_for('message')
-                            if z.content == "add":
-                                while True:
-                                    await message.channel.send("Enter a song to add, when finished type done:")
-                                    a = await client.wait_for('message')
-                                    if a.content == "done":
-                                        return
-                                    sql = ("INSERT INTO "+x.content+" (song) VALUES ('"+a.content+"')")
-                                    cursor.execute(sql)
-                                    database.commit()
-                                    await message.channel.send("Song added to playlist")
-                                return
-                            if z.content == "remove":
-                                sql = ("SELECT song FROM "+x.content)
-                                cursor.execute(sql)
-                                songs = cursor.fetchall()
-                                regStr = ""
-                                for song in songs:
-                                    for char in song:
-                                        regStr += char
-                                    regStr += "\n"
-                                await message.channel.send(regStr)
-
-                                    
-                                while True:
-                                    await message.channel.send("Enter a song to remove, when finished type done:")
-                                    a = await client.wait_for('message')
-                                    if a.content == "done":
-                                        return
-                                    sql = ("DELETE FROM "+x.content+" WHERE song = '"+a.content+"'")
-                                    cursor.execute(sql)
-                                    database.commit()
-                                    await message.channel.send("Song "+a.content+" removed from playlist")
-                                return
-                        if y.content == "N" or y.content == "n" or y.content == "no":
-                            await message.channel.send("Starting playlist")
-                            sql = ("SELECT song FROM "+x.content)
-                            cursor.execute(sql)
-                            songs = cursor.fetchall()
-                            for song in songs:
-                                regStr = ""
-                                for char in song:
-                                    regStr += char
-                                await message.channel.send("Now playing: "+regStr)
-                                videoSearch = VideosSearch(regStr, limit=1)
-                                url = videoSearch.result()['result'][0]['link']
-                                voice_state = message.author.voice
-                                if not voice_state or not voice_state.channel:
-                                    await message.channel.send("You're not in a voice channel!")
-                                    return
-                                voice_state = message.author.voice
-                                if not voice_state:
-                                    await message.channel.send(f'{message.author.mention} is not connected to a voice channel')
-                                    return
-                                voice_channel = voice_state.channel
-                                if not message.guild.voice_client:
-                                    await voice_channel.connect()
-                                else:
-                                    await message.guild.voice_client.move_to(voice_channel)
-                                voice_client = message.guild.voice_client
-                                if voice_client.is_playing():
-                                    await queue_play(y, url)
-                                await start_song(y, url)
-                            database.close()
-                            return
-                cursor.execute("CREATE TABLE " + x.content + "(song VARCHAR(45))")
-                await message.channel.send("Playlist Created")
-                await message.channel.send("Would you like to add songs to the playlist?")
-                y = await client.wait_for('message')
-                if y.content == "Y" or y.content == "y" or y.content == "yes":
-                    await message.channel.send("Add songs, when you are finished type done")
-                    while True:
-                        z = await client.wait_for('message')
-                        if z.content == "done":
-                            await message.channel.send("Songs added to playlist")
-                            return
-                        else:
-                            sql = ("INSERT INTO "+x.content+" (song) VALUES ('"+z.content+"')")
-                            cursor.execute(sql)
-                            await message.channel.send("Song added to playlist")
-                            database.commit()
-                else:
-                    return
-            except:
-                await message.channel.send("Error: Problem with playlist database")
-                y = await client.wait_for('message')
-                if y.content == "Y" or y.content == "y" or y.content == "yes": 
-                    return
-                else:
-                    return
+            await playlistStart(message)
         except:
-            await message.channel.send("Error: Connecting to database")
-            return
+            await message.channel.send("Error: Function did not Complete")
+        return
     if message.content == 'listplaylists':
         try:
             await listPlaylist(message)
@@ -480,6 +310,170 @@ async def listPlaylist(message):
     except:
             await message.channel.send("Error: Could not connect to database")
     return
-
+async def randomSong(message):
+    try:
+            database = mysql.connector.connect(
+                host="",
+                user="",
+                password="",
+                database=""
+            )
+            cursor = database.cursor()
+            try:
+                cursor.execute("use random")
+                cursor.execute("SELECT * FROM random")
+                songs = cursor.fetchall()
+                for table in songs:
+                    regStr = ""
+                    for char in table:
+                        regStr += char
+                    strArr = strArr.pushback(regStr)
+                x = len(strArr)
+                while x > 0: 
+                    y = random.randint(0, x)
+                    videoSearch = VideosSearch(strArr[y], limit = 1)
+                    url = videoSearch.result()['result'][0]['link']
+                    voice_state = message.author.voice
+                    if not voice_state or not voice_state.channel:
+                        await message.channel.send("You're not in a voice channel!")
+                        return
+                    voice_state = message.author.voice
+                    if not voice_state:
+                        await message.channel.send(f'{message.author.mention} is not connected to a voice channel')
+                        return
+                    voice_channel = voice_state.channel
+                    if not message.guild.voice_client:
+                        await voice_channel.connect()
+                    else:
+                        await message.guild.voice_client.move_to(voice_channel)
+                    voice_client = message.guild.voice_client
+                    if voice_client.is_playing():
+                        await queue_play(message, url)
+                    await start_song(message, url)
+                    strArr.pop(y)
+                    x -= 1
+                database.close()
+                return
+            except:
+                await message.channel.send("Error: Problem with random playlist database")
+                return
+    except:
+        await message.channel.send("Error: Connecting to database")
+        return
+async def playlistStart(message):
+    try:
+            database = mysql.connector.connect(
+                host="",
+                user="",
+                password="",
+                database=""
+            )
+            cursor = database.cursor()
+            try:
+                await message.channel.send("Please select a playlist")
+                await listPlaylist(message)
+                x = await client.wait_for('message')
+                cursor.execute("SHOW TABLES")
+                tables = cursor.fetchall()
+                for table in tables:
+                    regStr = ""
+                    for char in table:
+                        regStr += char
+                    if(x.content == regStr):
+                        await message.channel.send("Would you like to edit the playlist?")
+                        y = await client.wait_for('message')
+                        if y.content == "Y" or y.content == "y" or y.content == "yes":
+                            await message.channel.send("Would you like to add or remove songs?")
+                            z = await client.wait_for('message')
+                            if z.content == "add":
+                                while True:
+                                    await message.channel.send("Enter a song to add, when finished type done:")
+                                    a = await client.wait_for('message')
+                                    if a.content == "done":
+                                        return
+                                    sql = ("INSERT INTO "+x.content+" (song) VALUES ('"+a.content+"')")
+                                    cursor.execute(sql)
+                                    database.commit()
+                                    await message.channel.send("Song added to playlist")
+                                return
+                            if z.content == "remove":
+                                sql = ("SELECT song FROM "+x.content)
+                                cursor.execute(sql)
+                                songs = cursor.fetchall()
+                                regStr = ""
+                                for song in songs:
+                                    for char in song:
+                                        regStr += char
+                                    regStr += "\n"
+                                await message.channel.send(regStr)
+                                while True:
+                                    await message.channel.send("Enter a song to remove, when finished type done:")
+                                    a = await client.wait_for('message')
+                                    if a.content == "done":
+                                        return
+                                    sql = ("DELETE FROM "+x.content+" WHERE song = '"+a.content+"'")
+                                    cursor.execute(sql)
+                                    database.commit()
+                                    await message.channel.send("Song "+a.content+" removed from playlist")
+                                return
+                        if y.content == "N" or y.content == "n" or y.content == "no":
+                            await message.channel.send("Starting playlist")
+                            sql = ("SELECT song FROM "+x.content)
+                            cursor.execute(sql)
+                            songs = cursor.fetchall()
+                            for song in songs:
+                                regStr = ""
+                                for char in song:
+                                    regStr += char
+                                await message.channel.send("Now playing: "+regStr)
+                                videoSearch = VideosSearch(regStr, limit=1)
+                                url = videoSearch.result()['result'][0]['link']
+                                voice_state = message.author.voice
+                                if not voice_state or not voice_state.channel:
+                                    await message.channel.send("You're not in a voice channel!")
+                                    return
+                                voice_state = message.author.voice
+                                if not voice_state:
+                                    await message.channel.send(f'{message.author.mention} is not connected to a voice channel')
+                                    return
+                                voice_channel = voice_state.channel
+                                if not message.guild.voice_client:
+                                    await voice_channel.connect()
+                                else:
+                                    await message.guild.voice_client.move_to(voice_channel)
+                                voice_client = message.guild.voice_client
+                                if voice_client.is_playing():
+                                    await queue_play(y, url)
+                                await start_song(y, url)
+                            database.close()
+                            return
+                cursor.execute("CREATE TABLE " + x.content + "(song VARCHAR(45))")
+                await message.channel.send("Playlist Created")
+                await message.channel.send("Would you like to add songs to the playlist?")
+                y = await client.wait_for('message')
+                if y.content == "Y" or y.content == "y" or y.content == "yes":
+                    await message.channel.send("Add songs, when you are finished type done")
+                    while True:
+                        z = await client.wait_for('message')
+                        if z.content == "done":
+                            await message.channel.send("Songs added to playlist")
+                            return
+                        else:
+                            sql = ("INSERT INTO "+x.content+" (song) VALUES ('"+z.content+"')")
+                            cursor.execute(sql)
+                            await message.channel.send("Song added to playlist")
+                            database.commit()
+                else:
+                    return
+            except:
+                await message.channel.send("Error: Problem with playlist database")
+                y = await client.wait_for('message')
+                if y.content == "Y" or y.content == "y" or y.content == "yes": 
+                    return
+                else:
+                    return
+    except:
+        await message.channel.send("Error: Connecting to database")
+        return
 if __name__ == "__main__" :
     client.run(TOKEN)
