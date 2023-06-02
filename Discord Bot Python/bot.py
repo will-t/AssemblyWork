@@ -19,6 +19,8 @@ import asyncio
 import mysql.connector
 load_dotenv()
 
+TOKEN='OTQxNzI3ODUyNDYwNjY2OTAx.GSvUxN.t5MMqQPENXLWGqJPMnbtoEvnIhkeC4eumwXQjE'
+GUILD="JMAN's Dictatorship"
 intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
@@ -75,25 +77,29 @@ class SimpleView(discord.ui.View):
 
     @discord.ui.button(label='Play', style=discord.ButtonStyle.green)
     async def play1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await resume()
+            await resume(self.message)
+
+
+
         #self.var = True
         
 
     @discord.ui.button(label='Pause', style=discord.ButtonStyle.blurple)
     async def pause1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await pause()
+            await pause(self.message)
         #self.var = True
         
         
 
     @discord.ui.button(label='Stop', style=discord.ButtonStyle.red)
     async def stop1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await stop()
+            await stop(self.message)
+
         #self.var = False
 
     @discord.ui.button(label='Skip', style=discord.ButtonStyle.grey)
     async def skip1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await skip_song()
+            await skip_song(self.message)
         #self.var = False
         
 
@@ -102,7 +108,7 @@ async def button(message):
 
     view = SimpleView(timeout=300)
     
-    message = await message.send(view=view)
+    message = await message.channel.send(view=view)
     view.message = message
     await view.wait()
     #await view.disable_buttons()
@@ -117,19 +123,19 @@ async def button(message):
     #    print("Cancel")
 
 #@bot.command(name='!commands', help='Shows all commands')
-async def show_commands(ctx):
-    await ctx.send('Commands: !s, !stop, !pause, !resume, !skip, !queue')
+async def show_commands(message):
+    await message.send('Commands: !s, !stop, !pause, !resume, !skip, !queue')
 
 async def leave_voice(message):
     voice_client = message.voice_client
     if voice_client:
-        await voice_client.disconnect()
+        voice_client.disconnect()
     else:
         await message.send("The bot is not connected to a voice channel.")
 
 #@bot.command(name='!skip', help='Skips the current song in the queue')
 async def skip_song(message):
-    voice_client = message.x.voice_client
+    voice_client = message.voice_client
     if not voice_client:
         await message.send("The bot is not connected to a voice channel.")
         return
@@ -141,7 +147,7 @@ async def skip_song(message):
 async def stop(message):
     voice_client = message.guild.voice_client
     if voice_client.is_playing():
-        await voice_client.stop()
+        voice_client.stop()
     else:
         await message.channel.send("The bot is not playing anything at the moment.")
 async def start_song(message, url):
@@ -206,10 +212,10 @@ async def on_message(message):
             search = message.content[5:]
             try:
                 database = mysql.connector.connect(
-                host=" ",
-                user=" ",
-                password="",
-                database=""
+                host="localhost",
+                user="music1",
+                password="Ocea6nic1+",
+                database="random"
             )
                 cursor = database.cursor()
                 sql = ("INSERT INTO random (song) VALUES ('"+search+"')")
@@ -346,10 +352,10 @@ async def on_ready(ctx):
 async def listPlaylist(message):
     try:
             database = mysql.connector.connect(
-                host="",
-                user="",
-                password="",
-                database=""
+                host="localhost",
+                user="music1",
+                password="Ocea6nic1+",
+                database="random"
             )
             cursor = database.cursor()
             cursor.execute("SHOW TABLES")
@@ -370,10 +376,10 @@ async def listPlaylist(message):
 async def randomSong(message):
     try:
             database = mysql.connector.connect(
-                host="",
-                user="",
-                password="",
-                database=""
+                host="localhost",
+                user="music1",
+                password="Ocea6nic1+",
+                database="random"
             )
             cursor = database.cursor()
             try:
@@ -420,10 +426,10 @@ async def randomSong(message):
 async def playlistStart(message):
     try:
             database = mysql.connector.connect(
-                host="",
-                user="",
-                password="",
-                database=""
+                host="localhost",
+                user="music1",
+                password="Ocea6nic1+",
+                database="random"
             )
             cursor = database.cursor()
             try:
