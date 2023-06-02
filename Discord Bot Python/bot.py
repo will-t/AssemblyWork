@@ -59,6 +59,62 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
         filename = data['title'] if stream else ytdl.prepare_filename(data)
         return cls(filename, data=data)
+    
+class SimpleView(discord.ui.View):
+    
+    #var : bool = None
+
+    #async def disable_buttons(self):
+    #    for item in self.children:
+    #        item.disabled = True
+    #        await self.message.edit(view=self)
+
+    #async def on_timeout(self):
+    #    await self.message.channel.send("Timed out")
+    #    await self.disable_buttons()
+
+    @discord.ui.button(label='Play', style=discord.ButtonStyle.green)
+    async def play1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await resume()
+        #self.var = True
+        
+
+    @discord.ui.button(label='Pause', style=discord.ButtonStyle.blurple)
+    async def pause1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await pause()
+        #self.var = True
+        
+        
+
+    @discord.ui.button(label='Stop', style=discord.ButtonStyle.red)
+    async def stop1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await stop()
+        #self.var = False
+
+    @discord.ui.button(label='Skip', style=discord.ButtonStyle.grey)
+    async def skip1(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await skip_song()
+        #self.var = False
+        
+
+
+async def button(message):
+
+    view = SimpleView(timeout=300)
+    
+    message = await message.send(view=view)
+    view.message = message
+    await view.wait()
+    #await view.disable_buttons()
+    
+    #if view.var is None:
+    #    print("Timeout")
+
+    #elif view.var is True:
+    #    print("OK")
+
+    #elif view.var is False:
+    #    print("Cancel")
 
 #@bot.command(name='!commands', help='Shows all commands')
 async def show_commands(ctx):
@@ -102,6 +158,7 @@ async def start_song(message, url):
         await asyncio.sleep(1)
         #create instance of bot button view/ await for response, length as long as song length
         #after song finishes terminate button view and continue next song 
+        await button(message)
         
     if len(queue) > 0:
         next_song_url = queue.pop(0)
