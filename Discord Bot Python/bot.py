@@ -19,8 +19,6 @@ import asyncio
 import mysql.connector
 load_dotenv()
 
-TOKEN='OTQxNzI3ODUyNDYwNjY2OTAx.GSvUxN.t5MMqQPENXLWGqJPMnbtoEvnIhkeC4eumwXQjE'
-GUILD="JMAN's Dictatorship"
 intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
@@ -212,10 +210,7 @@ async def on_message(message):
             search = message.content[5:]
             try:
                 database = mysql.connector.connect(
-                host="localhost",
-                user="music1",
-                password="Ocea6nic1+",
-                database="random"
+
             )
                 cursor = database.cursor()
                 sql = ("INSERT INTO random (song) VALUES ('"+search+"')")
@@ -352,10 +347,7 @@ async def on_ready(ctx):
 async def listPlaylist(message):
     try:
             database = mysql.connector.connect(
-                host="localhost",
-                user="music1",
-                password="Ocea6nic1+",
-                database="random"
+
             )
             cursor = database.cursor()
             cursor.execute("SHOW TABLES")
@@ -376,10 +368,7 @@ async def listPlaylist(message):
 async def randomSong(message):
     try:
             database = mysql.connector.connect(
-                host="localhost",
-                user="music1",
-                password="Ocea6nic1+",
-                database="random"
+
             )
             cursor = database.cursor()
             try:
@@ -426,10 +415,7 @@ async def randomSong(message):
 async def playlistStart(message):
     try:
             database = mysql.connector.connect(
-                host="localhost",
-                user="music1",
-                password="Ocea6nic1+",
-                database="random"
+
             )
             cursor = database.cursor()
             try:
