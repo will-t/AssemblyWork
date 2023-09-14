@@ -1,14 +1,13 @@
 #This file contain the message commands
 import os
-from dotenv import load_dotenv
-import os
 import openai
 import subprocess
 import discord
-from dotenv import load_dotenv
 import mysql.connector
 from youtubesearchpython import VideosSearch
-from commands import resume, pause, stop, skip_song, randomSong, playlistStart, listPlaylist, join_voice, leave_voice, queue_play, help, start_song
+from functions import *
+from spotify_functions import get_playlist_tracks
+from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -16,10 +15,7 @@ GUILD = os.getenv('DISCORD_GUILD')
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 intents = discord.Intents.all()
-intents.members = True
 client = discord.Client(intents=intents)
-
-
  
 @client.event
 async def on_message(message):
@@ -43,7 +39,6 @@ async def on_message(message):
             search = message.content[5:]
             try:
                 database = mysql.connector.connect(
-
             )
                 cursor = database.cursor()
                 sql = ("INSERT INTO random (song) VALUES ('"+search+"')")
@@ -153,7 +148,7 @@ async def on_message(message):
         return
     if message.content.startswith('prompt'):
         response = openai.Completion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         prompt=message.content[7:],
         max_tokens=1000
         )
@@ -168,6 +163,22 @@ async def on_message(message):
     if message.content.startswith('help'):
         await help(message)
         return
+    if message.content.startswith('spotifylink'): 
+        playlist_url = message.content.split(' ')[1] 
+        playlist_id = playlist_url.split('/')[-1] 
+        await message.channel.send("What would you like to name this playlist?")
+        await client.wait_for('message')
+        playlist_name = message.channel.last_message.content
+        await get_playlist_tracks(playlist_id, playlist_name, message.channel)
+
+    if message.content.startswith('playlistmenu'):
+        playlists = playlistmenu()
+        if not playlists:
+            await message.channel.send('No playlists found.')
+            return
+        dynamic_options = [discord.SelectOption(label=playlist, description=playlist) for playlist in playlists]
+        view = MyMenu(dynamic_options)
+        await message.channel.send('Here are your playlists:', view=view)        
 
 async def on_ready(ctx):
     for guild in client.guilds:
