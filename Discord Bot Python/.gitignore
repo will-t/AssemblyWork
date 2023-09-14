@@ -1,0 +1,5 @@
+.env
+*.webm
+*__pycache__/
+
+
